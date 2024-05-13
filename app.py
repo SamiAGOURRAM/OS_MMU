@@ -57,7 +57,52 @@ def manage_memory():
 
 
 
+@app.route('/add-process', methods=['POST'])
+def add_process():
+    if mm:
+        try:
+            size = int(request.form['size'])
+            process = mm.allocate_memory(size)
+            if process:
+                return jsonify({'message': f"Process {process.pid} created with size {size} KB"})
+            else:
+                return jsonify({'error': "Not enough memory"})
+        except ValueError:
+            return jsonify({'error': "Invalid size"})
+    else:
+        return jsonify({'error': "Memory manager not initialized"})
 
 
+@app.route('/delete-process', methods=['POST'])
+def delete_process():
+    if mm:
+        try:
+            pid = int(request.form['pid'].strip())
+            if pid:
+                message = mm.free_memory(pid)
+                return jsonify({'message': message})
+            else:
+                return jsonify({'error': "Process ID is required."})
+        except ValueError:
+            return jsonify({'error': "Invalid Process ID"})
+    else:
+        return jsonify({'error': "Memory manager not initialized"})
+    
+
+@app.route('/convert-address', methods=['POST'])
+def convert_address():
+    if mm:
+        try:
+            pid = int(request.form['pid'].strip())
+            va = int(request.form['virtual_address'].strip())
+            if pid and va:
+                result = mm.convert_virtual_to_physical(pid, va)
+                return jsonify({'message': result})
+            else:
+                return jsonify({'error': "Both Process ID and Virtual Address are required."})
+        except ValueError:
+            return jsonify({'error': "Invalid Process ID or Virtual Address"})
+    else:
+        return jsonify({'error': "Memory manager not initialized"})
 if __name__ == '__main__':
     app.run(debug=True)
