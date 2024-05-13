@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Memory</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        function fetchMemoryData() {
+            $.getJSON('/memory-data', function(data) {
+                $('#memory-map').empty(); // Clear existing entries
+                data.memory_blocks.forEach(block => {
+                    const width = (block.size / data.total_memory * 100).toFixed(2);
+                    const color = block.process_id ? '#28a745' : '#6c757d'; // Green if allocated, grey if free
+                    const content = block.process_id ? `Process ${block.process_id} (${block.size} KB)` : `Free (${block.size} KB)`;
+                    $('#memory-map').append(
+                        `<div style="width: ${width}%; background-color: ${color};">${content}</div>`
+                    );
+                });
+            });
+        }
+
+        fetchMemoryData(); // Load memory data on page load
+        $('#refresh').click(fetchMemoryData); // Refresh data when button is clicked
+
+        // Handle form submissions to reflect changes immediately
+        $('form').submit(function(event) {
+            event.preventDefault(); // Prevent default form submission
+            $.post($(this).attr('action'), $(this).serialize(), function(response) {
+                $('#message').text(response.message); // Display message
+                fetchMemoryData(); // Refresh memory map after changes
+            }, 'json');
+        });
+    });
+    </script>
+</head>
+<body>
+    <h1>Memory Management</h1>
+    <form method="post" action="/manage-process">
+        <div>
+            <input type="text" name="size" placeholder="Memory size for new process (KB)" >
+            <button type="submit" name="create">Create Process</button>
+        </div>
+        <div>
+            <input type="text" name="pid" placeholder="Process ID to delete" >
+            <button type="submit" name="delete">Delete Process</button>
+        </div>
+        <div>
+            <input type="text" name="pid" placeholder="Process ID for conversion" >
+            <input type="text" name="virtual_address" placeholder="Virtual Address" >
+            <button type="submit" name="convert">Convert Address</button>
+        </div>
+    </form>
+
+    <h2>Memory Map:</h2>
+    <div id="memory-map" style="width: 100%; display: flex; overflow-x: auto;"></div>
+
+    <p id="message" class="message"></p>  <!-- For displaying server responses -->
+</body>
+</html>

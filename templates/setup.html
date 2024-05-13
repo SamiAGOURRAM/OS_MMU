@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Setup Memory Manager</title>
+    <link rel="stylesheet" href="/static/styles.css">
+
+</head>
+<body>
+    <h1>Setup Memory Configuration</h1>
+    <form method="post">
+        <div>
+            <label for="total_memory">Total Memory (KB):</label>
+            <input type="text" name="total_memory" required>
+        </div>
+        <div>
+            <label for="strategy_id">Allocation Strategy:</label>
+            <select name="strategy_id">
+                <option value="1">First Fit</option>
+                <option value="2">Next Fit</option>
+                <option value="3">Best Fit</option>
+                <option value="4">Worst Fit</option>
+            </select>
+        </div>
+        <button type="submit">Setup Memory Manager</button>
+    </form>
+</body>
+</html>

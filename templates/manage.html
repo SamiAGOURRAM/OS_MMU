@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Manage Memory</title>
+        <link rel="stylesheet" href="/static/styles.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script>
+        $(document).ready(function() {
+            function updateMemoryMap() {
+                $.getJSON('/memory-data', function(data) {
+                    var container = $('#memory-map');
+                    container.empty();
+                    data.memory_blocks.forEach(function(block) {
+                        var blockElement = $('<div class="memory-block"></div>');
+                        blockElement.css('width', (block.size / data.total_memory * 100) + '%');
+                        blockElement.text(block.process_id ? 'Process ' + block.process_id : 'Free');
+                        blockElement.addClass(block.process_id ? 'allocated' : 'free');
+                        container.append(blockElement);
+                    });
+                });
+            }
+    
+            updateMemoryMap(); // Update on page load
+    
+            $('form').submit(function(event) {
+                event.preventDefault();
+                var form = $(this);
+                $.ajax({
+                    type: form.attr('method'),
+                    url: form.attr('action'),
+                    data: form.serialize(),
+                    success: function(response) {
+                        $('#message').text(response.message);
+                        updateMemoryMap();
+                    }
+                });
+            });
+        });
+        </script>
+    </head>
+<body>
+    <h1>Memory Management</h1>
+    <form method="post">
+        <div>
+            <input type="text" name="size" placeholder="Memory size for new process (KB)" >
+            <button type="submit" name="create">Create Process</button>
+        </div>
+        <div>
+            <input type="text" name="pid" placeholder="Process ID to delete" >
+            <button type="submit" name="delete">Delete Process</button>
+        </div>
+        <div>
+            <input type="text" name="pid" placeholder="Process ID for conversion" >
+            <input type="text" name="virtual_address" placeholder="Virtual Address" >
+            <button type="submit" name="convert">Convert Address</button>
+        </div>
+    </form>
+
+    <div id="memory-map" style="display: flex; width: 100%; background-color: #eee; height: 50px; margin-top: 20px;"></div>
+
+    <div id="message"></div>
+
+    
+
+    <h2>Memory Map:</h2>
+    {% if memory_map %}
+        <ul>
+        {% for block in memory_map %}
+            <li>Base: {{ block.base }}, Size: {{ block.size }}, Status: {{ 'Free' if block.process_id is none else 'Allocated to Process ' + block.process_id|string }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if message %}
+        <p class="message">{{ message }}</p>
+    {% endif %}
+
+
+
+</body>
+</html>
+
+
+
+  
