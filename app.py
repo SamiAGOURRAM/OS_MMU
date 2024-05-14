@@ -104,5 +104,26 @@ def convert_address():
             return jsonify({'error': "Invalid Process ID or Virtual Address"})
     else:
         return jsonify({'error': "Memory manager not initialized"})
+    
+
+@app.route('/clear-memory', methods=['POST'])
+def clear_memory():
+    global mm
+    if mm:
+        mm.clear_memory()
+        return jsonify({'message': 'Memory cleared successfully'})
+    else:
+        return jsonify({'error': 'Memory manager not initialized'})
+    
+@app.route('/compact-memory', methods=['POST'])
+def compact_memory():
+    global mm
+    if mm:
+        mm.compact_memory()
+        return jsonify({'message': 'Memory compacted successfully'})
+    else:
+        return jsonify({'error': 'Memory manager not initialized'})
+    
+    
 if __name__ == '__main__':
     app.run(debug=True)

@@ -18,6 +18,15 @@
                         blockElement.addClass(block.process_id ? 'allocated' : 'free');
                         container.append(blockElement);
                     });
+
+                    // Update memory status list
+                    var memoryStatusList = $('#memory-status');
+                    memoryStatusList.empty();
+                    data.memory_blocks.forEach(function(block) {
+                        var status = block.process_id ? 'Allocated to Process ' + block.process_id : 'Free';
+                        var listItem = $('<li></li>').text('Base: ' + block.base + ', Size: ' + block.size + ', Status: ' + status);
+                        memoryStatusList.append(listItem);
+                    });
                 });
             }
 
@@ -32,7 +41,19 @@
                     data: form.serialize(),
                     success: function(response) {
                         $('#message').text(response.message);
-                        updateMemoryMap();
+                        updateMemoryMap(); // Update memory map after successful action
+                    }
+                });
+            });
+
+            $('#clear-memory').click(function(event) {
+                event.preventDefault();
+                $.ajax({
+                    type: 'POST',
+                    url: '/clear-memory',
+                    success: function(response) {
+                        $('#message').text(response.message);
+                        updateMemoryMap(); // Update memory map after clearing memory
                     }
                 });
             });
@@ -55,29 +76,42 @@
     </div>
 </form>
 
-<form method="post" action="/convert-address">
-    <div>
-        <input type="text" name="pid" placeholder="Process ID for conversion" >
-        <input type="text" name="virtual_address" placeholder="Virtual Address" >
-        <button type="submit" name="convert">Convert Address</button>
-    </div>
-</form>
+
+
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <form method="post" action="/convert-address" style="display: inline-block;">
+        <div>
+            <input type="text" name="pid" placeholder="Process ID for conversion">
+            <input type="text" name="virtual_address" placeholder="Virtual Address">
+            <button type="submit" name="convert">Convert Address</button>
+        </div>
+    </form>
+
+    <form id="clear-memory" method="post" action="/clear-memory" style="display: inline-block; padding: 0;">
+        <button type="submit" name="clear">Clear Memory</button>
+    </form>
+
+    <form method="post" action="/compact-memory" style="display: inline-block; padding: 0;">
+        <button type="submit" name="compact">Compact Memory</button>
+    </form>
+</div>
+
+
+
+
 
 <div id="memory-map" style="display: flex; width: 100%; background-color: #eee; height: 50px; margin-top: 20px;"></div>
 
 <div id="message"></div>
 
 <h2>Memory Map:</h2>
-{% if memory_map %}
-    <ul>
-        {% for block in memory_map %}
-            <li>Base: {{ block.base }}, Size: {{ block.size }}, Status: {{ 'Free' if block.process_id is none else 'Allocated to Process ' + block.process_id|string }}</li>
-        {% endfor %}
-    </ul>
-{% endif %}
+<ul id="memory-status">
+    <!-- Memory status will be dynamically updated here -->
+</ul>
 
 {% if message %}
     <p class="message">{{ message }}</p>
 {% endif %}
+
 </body>
 </html>

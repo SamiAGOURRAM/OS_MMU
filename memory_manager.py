@@ -29,6 +29,9 @@ class MemoryManager:
                 else:
                     return "Error: Virtual address is out of the process's address space"
         return "Error: No process found with the given ID"
+    
+    def clear_memory(self):
+        self.memory_blocks = [MemoryBlock(0, self.total_memory, None)]
 
     def first_fit(self, memory_required):
         for index, block in enumerate(self.memory_blocks):
@@ -113,6 +116,17 @@ class MemoryManager:
         for block in self.memory_blocks:
             status = 'Free' if block.process_id is None else f'Allocated to Process {block.process_id}'
             print(f'Base: {block.base}, Size: {block.size}, Status: {status}')
+
+    def compact_memory(self):
+        new_memory_blocks = []
+        current_base = 0
+        for block in self.memory_blocks:
+            if block.process_id is not None:
+                new_memory_blocks.append(MemoryBlock(current_base, block.size, block.process_id))
+                current_base += block.size
+        if len(new_memory_blocks) == 0:
+            return
+        self.memory_blocks = new_memory_blocks
 
 
 def run_tests():
