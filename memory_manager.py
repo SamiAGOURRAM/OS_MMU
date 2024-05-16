@@ -127,6 +127,7 @@ class MemoryManager:
         if len(new_memory_blocks) == 0:
             return
         self.memory_blocks = new_memory_blocks
+        self.memory_blocks.append(MemoryBlock(current_base, self.total_memory - current_base , None))
 
 
 def run_tests():
